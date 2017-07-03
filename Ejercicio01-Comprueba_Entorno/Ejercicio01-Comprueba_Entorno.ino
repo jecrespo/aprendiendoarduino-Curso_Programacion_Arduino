@@ -24,7 +24,10 @@
 #define PIN_LDR A1
 #define PIN_TMP36 A2
 
-byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xAA}; //Sustituir YY por el numero de KIT de Arduino
+#define NOTE_C5  523  //Frecuencia de sonido del buzzer
+
+byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xYY}; //Sustituir YY por el numero de KIT de Arduino
+EthernetServer server = EthernetServer(80);
 
 Servo miservo;
 
@@ -33,7 +36,7 @@ void setup() {
   Serial.begin(9600);
 
   //Inicializo Pines
-  Serial.println("Inicializando pines digitales...");
+  Serial.println(F("Inicializando pines digitales..."));
   pinMode(PIN_BOTON_A, INPUT_PULLUP);
   pinMode(PIN_BOTON_B, INPUT);
   pinMode(PIN_LED_1, OUTPUT);
@@ -42,20 +45,20 @@ void setup() {
   pinMode(PIN_LED_4, OUTPUT);
 
   //Inicializo Servo
-  Serial.println("Inicializando servo...");
+  Serial.println(F("Inicializando servo..."));
   miservo.attach(PIN_SERVO);
 
   //Inicializo Ethernet Shield
-  Serial.println("Inicializando red...");
+  Serial.println(F("Inicializando red..."));
+
   if (Ethernet.begin(mac) == 0) {
-    Serial.println("Fallo en la configuracion Ethernet usando DHCP");
-    for (;;)
-      ;
+    Serial.println(F("Fallo en la configuracion Ethernet usando DHCP. Continuando resto de Tests"));
   }
   else {
-    Serial.print("IP asignada por DHCP: ");
+    Serial.print(F("IP asignada por DHCP: "));
     Serial.println(Ethernet.localIP());
   }
+
 }
 
 void loop() {
@@ -97,13 +100,13 @@ void loop() {
       pruebaServidorWeb();
       break;
     default:
-      Serial.println("Opcion incorrecta.\nVuelve a introducir test a realizar");
+      Serial.println(F("Opcion incorrecta.\nVuelve a introducir test a realizar"));
       break;
   }
 }
 
 void muestraMenu() {
-  Serial.println(F("------------------------"));
+  Serial.println(F("\n------------------------"));
   Serial.println(F("MENU"));
   Serial.println(F("Selecciona el test a ejecutar"));
   Serial.println(F("1 - Muestra IP Arduino"));
@@ -127,7 +130,7 @@ int recogeRespuesta() {
   while (Serial.available() == 0) {
     if (segundos > 10) {
       segundos = 0;
-      Serial.println("\nEsperando respuesta...");
+      Serial.println(F("\nEsperando respuesta..."));
       muestraMenu();
     }
     Serial.print(".");
@@ -142,7 +145,7 @@ int recogeRespuesta() {
       delay(5);
     }  while (Serial.available() > 0);
 
-    Serial.print("He Leido la cadena: " + cadena_leida);
+    Serial.print("\nHe Leido la cadena: " + cadena_leida);
 
     int respuesta = cadena_leida.toInt();
     return respuesta;
@@ -150,14 +153,14 @@ int recogeRespuesta() {
 }
 
 void muestraIP() {
-  Serial.println("Muestra IP Arduino.");
-  Serial.print("IP asignada por DHCP: ");
+  Serial.println(F("Muestra IP Arduino."));
+  Serial.print(F("IP asignada por DHCP: "));
   Serial.println(Ethernet.localIP());
 }
 
 void pruebaBotones() {
-  Serial.println("Prueba Botones");
-  Serial.println("Pulsar 'q' para salir.");
+  Serial.println(F("Prueba Botones"));
+  Serial.println(F("Pulsar 'q' para salir."));
   int pulsos_a = 0;
   int pulsos_b = 0;
   static boolean anterior_a = digitalRead(PIN_BOTON_A);
@@ -176,25 +179,28 @@ void pruebaBotones() {
 
     if (anterior_a != estado_a) {
       if (estado_a == LOW) {  //flanco descendente pull-up
-        Serial.println("Pulsado botón A");
+        Serial.println(F("Pulsado boton A"));
         pulsos_a++;
-        Serial.println("Numero pulsaciones botón A: " + (String)pulsos_a);
+        Serial.println("Numero pulsaciones boton A: " + (String)pulsos_a);
       }
     }
 
     if (anterior_b != estado_b) {
       if (estado_b == HIGH) {  //flanco ascendente pull-down
-        Serial.println("Pulsado botón B");
+        Serial.println(F("Pulsado boton B"));
         pulsos_b++;
-        Serial.println("Numero pulsaciones botón B: " + (String)pulsos_b);
+        Serial.println("Numero pulsaciones boton B: " + (String)pulsos_b);
       }
     }
+    anterior_a = estado_a;
+    anterior_b = estado_b;
+    delay(50); //Evitar rebotes
   }
 }
 
 void pruebaLEDs() {
-  Serial.println("Prueba LEDs");
-  Serial.println("Pulsar 'q' para salir.");
+  Serial.println(F("Prueba LEDs"));
+  Serial.println(F("Pulsar 'q' para salir."));
 
   while (true) {
     //Compruebo si llega una q
@@ -205,12 +211,14 @@ void pruebaLEDs() {
     }
 
     for (int i = PIN_LED_1; i <= PIN_LED_4; i++) {
+      Serial.println("Probando LED en PIN " + (String)i);
       digitalWrite(i, HIGH);
       delay(500);
       digitalWrite(i, LOW);
       delay(500);
     }
     for (int i = PIN_LED_4; i >= PIN_LED_1; i--) {
+      Serial.println("Probando LED en PIN " + (String)i);
       digitalWrite(i, HIGH);
       delay(500);
       digitalWrite(i, LOW);
@@ -220,8 +228,8 @@ void pruebaLEDs() {
 }
 
 void pruebaPWM() {
-  Serial.println("Prueba PWM");
-  Serial.println("Pulsar 'q' para salir.");
+  Serial.println(F("Prueba PWM"));
+  Serial.println(F("Pulsar 'q' para salir."));
 
   while (true) {
     //Compruebo si llega una q
@@ -232,6 +240,7 @@ void pruebaPWM() {
     }
 
     for (int i = PIN_LED_1; i <= PIN_LED_4; i++) {
+      Serial.println("Probando PWM en LED PIN " + (String)i);
       for (int fadeValue = 0 ; fadeValue <= 255; fadeValue += 5) {
         analogWrite(i, fadeValue);
         delay(30);
@@ -246,8 +255,8 @@ void pruebaPWM() {
 }
 
 void pruebaPotenciometro() {
-  Serial.println("Prueba Potenciometro, ver en Serial Plotter");
-  Serial.println("Pulsar 'q' para salir.");
+  Serial.println(F("Prueba Potenciometro, ver en Serial Plotter"));
+  Serial.println(F("Pulsar 'q' para salir."));
 
   while (true) {
     //Compruebo si llega una q
@@ -263,8 +272,8 @@ void pruebaPotenciometro() {
 }
 
 void pruebaLDR() {
-  Serial.println("Prueba LDR, ver en Serial Plotter");
-  Serial.println("Pulsar 'q' para salir.");
+  Serial.println(F("Prueba LDR, ver en Serial Plotter"));
+  Serial.println(F("Pulsar 'q' para salir."));
   int maximo = 0;
   int minimo = 1023;
 
@@ -278,7 +287,7 @@ void pruebaLDR() {
 
     int sensorValue = analogRead(PIN_LDR);
     maximo = max(maximo, sensorValue);
-    minimo = max(minimo, sensorValue);
+    minimo = min(minimo, sensorValue);
     Serial.print(sensorValue);
     Serial.print(",");
     Serial.print(maximo);
@@ -289,8 +298,8 @@ void pruebaLDR() {
 }
 
 void pruebaTemperatura() {
-  Serial.println("Sonda temperatura");
-  Serial.println("Pulsar 'q' para salir.");
+  Serial.println(F("Sonda temperatura, ver en monitor serie"));
+  Serial.println(F("Pulsar 'q' para salir."));
 
   while (true) {
     //Compruebo si llega una q
@@ -301,15 +310,16 @@ void pruebaTemperatura() {
     }
 
     int sensorVal = analogRead(PIN_TMP36);
-    float voltage = (sensorVal / 1024.0) * 5.0;
+    float voltage = (sensorVal / 1023.0) * 5.0;
     float temperature = (voltage - 0.5) * 100;
     Serial.println(temperature);
+    delay(500);
   }
 }
 
 void pruebaServo() {
-  Serial.println("Test Servo");
-  Serial.println("Pulsar 'q' para salir.");
+  Serial.println(F("Test Servo"));
+  Serial.println(F("Pulsar 'q' para salir."));
 
   while (true) {
     //Compruebo si llega una q
@@ -324,45 +334,53 @@ void pruebaServo() {
       miservo.write(pos);
       delay(30);
     }
+    Serial.println(F("Giro de 20 a 160 grados"));
 
     for (int pos = 160; pos >= 20; pos -= 5) {
       miservo.write(pos);
       delay(30);
     }
+    Serial.println(F("Giro de 160 a 20 grados"));
   }
 }
 
 void pruebaBuzzer() {
-  Serial.println("Test Buzzer");
-  Serial.println("Pulsar 'q' para salir.");
+  Serial.println(F("Test Buzzer"));
+  Serial.println(F("Pulsar 'q' para salir."));
 
   while (true) {
+    static boolean output = HIGH;
+
     //Compruebo si llega una q
     if (Serial.available() > 0) {
       char caracter_leido = Serial.read();
       if (caracter_leido == 'q')
         break;
     }
+
+    output ? tone(PIN_BUZZER, NOTE_C5) : noTone(PIN_BUZZER);
+    output ? Serial.println(F("beep")) : Serial.println(F("no beep"));
+    output = !output;
+    delay(1000);
   }
 }
 
 void  pruebaClienteWeb() {
   Serial.println("Test Cliente Web");
-  Serial.println("Pulsar 'q' para salir.");
 
   EthernetClient client;
   char url_aprendiendoarduino[] = "www.aprendiendoarduino.com";
 
   //Mando peticiñon web
   if (client.connect(url_aprendiendoarduino, 80)) {
-    Serial.println("connected");
-    client.println("GET /servicios/aprendiendoarduino/ HTTP/1.1");
-    client.println("Host: www.aprendiendoarduino.com");
-    client.println("Connection: close");
+    Serial.println(F("connected"));
+    client.println(F("GET /servicios/aprendiendoarduino/ HTTP/1.1"));
+    client.println(F("Host: www.aprendiendoarduino.com"));
+    client.println(F("Connection: close"));
     client.println();
   }
   else {
-    Serial.println("connection failed");
+    Serial.println(F("connection failed"));
   }
 
   //Espero respuesta del servidor
@@ -371,7 +389,7 @@ void  pruebaClienteWeb() {
   }
 
   if (client.available()) {
-    Serial.println("Respuesta del Servidor---->");
+    Serial.println(F("Respuesta del Servidor---->"));
     while (client.available()) {
       char c = client.read();
       Serial.print(c);
@@ -381,8 +399,9 @@ void  pruebaClienteWeb() {
 }
 
 void  pruebaServidorWeb() {
-  Serial.println("Test Servidor Web");
-  Serial.println("Pulsar 'q' para salir.");
+  Serial.print(F("Test Servidor Web. Para probar conectarse a la IP: "));
+  Serial.println(Ethernet.localIP());
+  Serial.println(F("Pulsar 'q' para salir."));
 
   while (true) {
     //Compruebo si llega una q
@@ -390,6 +409,21 @@ void  pruebaServidorWeb() {
       char caracter_leido = Serial.read();
       if (caracter_leido == 'q')
         break;
+    }
+
+    EthernetClient client = server.available();
+    if (client > 0) {
+      //Leer la petición y sacarla por el puerto serie
+      while (client.available() > 0) {
+        char inChar = client.read();
+        Serial.print(inChar);
+      }
+      client.println(F("HTTP/1.0 200K"));
+      client.println();
+      client.print(F("Servidor embebido del Arduino con IP: "));
+      client.println(Ethernet.localIP());
+      client.println();
+      client.stop();
     }
   }
 }
