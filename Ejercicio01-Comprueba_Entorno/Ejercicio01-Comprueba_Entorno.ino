@@ -103,22 +103,21 @@ void loop() {
 }
 
 void muestraMenu() {
-  Serial.println("------------------------");
-  Serial.println("MENU");
-  Serial.println("Selecciona el test a ejecutar");
-  Serial.println("Una vez dentro del test pulsar 'q' para salir.");
-  Serial.println("1 - Muestra IP Arduino");
-  Serial.println("2 - Prueba Botones (comprobar pulsaciones correctas)");
-  Serial.println("3 - Prueba LEDs (Iluminación LEDs)");
-  Serial.println("4 - Prueba PWM (No todos los LEDs son PWM)");
-  Serial.println("5 - Prueba Potenciometro (comprobar que va de 0 a 1023)");
-  Serial.println("6 - Prueba LDR (ver valores máximo y mínimo. Anotarlos)");
-  Serial.println("7 - Sonda temperatura (comprueba valores)");
-  Serial.println("8 - Test Servo (comprobar el movimiento completo)");
-  Serial.println("9 - Test Buzzer (comprobar sonido)");
-  Serial.println("10 - Test Cliente Web (comprobar respuesta del servidor)");
-  Serial.println("11 - Test Servidor Web (comprobar servidor embebido en Arduino)");
-  Serial.println("------------------------");
+  Serial.println(F("------------------------"));
+  Serial.println(F("MENU"));
+  Serial.println(F("Selecciona el test a ejecutar"));
+  Serial.println(F("1 - Muestra IP Arduino"));
+  Serial.println(F("2 - Prueba Botones (comprobar pulsaciones correctas)"));
+  Serial.println(F("3 - Prueba LEDs (Iluminación LEDs)"));
+  Serial.println(F("4 - Prueba PWM (No todos los LEDs son PWM)"));
+  Serial.println(F("5 - Prueba Potenciometro (comprobar que va de 0 a 1023)"));
+  Serial.println(F("6 - Prueba LDR (ver valores máximo y mínimo. Anotarlos)"));
+  Serial.println(F("7 - Sonda temperatura (comprueba valores)"));
+  Serial.println(F("8 - Test Servo (comprobar el movimiento completo)"));
+  Serial.println(F("9 - Test Buzzer (comprobar sonido)"));
+  Serial.println(F("10 - Test Cliente Web (comprobar respuesta del servidor)"));
+  Serial.println(F("11 - Test Servidor Web (comprobar servidor embebido en Arduino)"));
+  Serial.println(F("------------------------"));
 }
 
 int recogeRespuesta() {
@@ -151,45 +150,246 @@ int recogeRespuesta() {
 }
 
 void muestraIP() {
-  Serial.println("Muestra IP Arduino");
+  Serial.println("Muestra IP Arduino.");
+  Serial.print("IP asignada por DHCP: ");
+  Serial.println(Ethernet.localIP());
 }
 
 void pruebaBotones() {
   Serial.println("Prueba Botones");
+  Serial.println("Pulsar 'q' para salir.");
+  int pulsos_a = 0;
+  int pulsos_b = 0;
+  static boolean anterior_a = digitalRead(PIN_BOTON_A);
+  static boolean anterior_b = digitalRead(PIN_BOTON_B);
+
+  while (true) {
+    //Compruebo si llega una q
+    if (Serial.available() > 0) {
+      char caracter_leido = Serial.read();
+      if (caracter_leido == 'q')
+        break;
+    }
+
+    boolean estado_a = digitalRead(PIN_BOTON_A);
+    boolean estado_b = digitalRead(PIN_BOTON_B);
+
+    if (anterior_a != estado_a) {
+      if (estado_a == LOW) {  //flanco descendente pull-up
+        Serial.println("Pulsado botón A");
+        pulsos_a++;
+        Serial.println("Numero pulsaciones botón A: " + (String)pulsos_a);
+      }
+    }
+
+    if (anterior_b != estado_b) {
+      if (estado_b == HIGH) {  //flanco ascendente pull-down
+        Serial.println("Pulsado botón B");
+        pulsos_b++;
+        Serial.println("Numero pulsaciones botón B: " + (String)pulsos_b);
+      }
+    }
+  }
 }
 
 void pruebaLEDs() {
   Serial.println("Prueba LEDs");
+  Serial.println("Pulsar 'q' para salir.");
+
+  while (true) {
+    //Compruebo si llega una q
+    if (Serial.available() > 0) {
+      char caracter_leido = Serial.read();
+      if (caracter_leido == 'q')
+        break;
+    }
+
+    for (int i = PIN_LED_1; i <= PIN_LED_4; i++) {
+      digitalWrite(i, HIGH);
+      delay(500);
+      digitalWrite(i, LOW);
+      delay(500);
+    }
+    for (int i = PIN_LED_4; i >= PIN_LED_1; i--) {
+      digitalWrite(i, HIGH);
+      delay(500);
+      digitalWrite(i, LOW);
+      delay(500);
+    }
+  }
 }
 
 void pruebaPWM() {
   Serial.println("Prueba PWM");
+  Serial.println("Pulsar 'q' para salir.");
+
+  while (true) {
+    //Compruebo si llega una q
+    if (Serial.available() > 0) {
+      char caracter_leido = Serial.read();
+      if (caracter_leido == 'q')
+        break;
+    }
+
+    for (int i = PIN_LED_1; i <= PIN_LED_4; i++) {
+      for (int fadeValue = 0 ; fadeValue <= 255; fadeValue += 5) {
+        analogWrite(i, fadeValue);
+        delay(30);
+      }
+      for (int fadeValue = 255 ; fadeValue >= 0; fadeValue -= 5) {
+        analogWrite(i, fadeValue);
+        // wait for 30 milliseconds to see the dimming effect
+        delay(30);
+      }
+    }
+  }
 }
 
 void pruebaPotenciometro() {
-  Serial.println("Prueba Potenciometro");
+  Serial.println("Prueba Potenciometro, ver en Serial Plotter");
+  Serial.println("Pulsar 'q' para salir.");
+
+  while (true) {
+    //Compruebo si llega una q
+    if (Serial.available() > 0) {
+      char caracter_leido = Serial.read();
+      if (caracter_leido == 'q')
+        break;
+    }
+
+    Serial.println(analogRead(PIN_POT));
+    delay(500);
+  }
 }
 
 void pruebaLDR() {
-  Serial.println("Prueba LDR");
+  Serial.println("Prueba LDR, ver en Serial Plotter");
+  Serial.println("Pulsar 'q' para salir.");
+  int maximo = 0;
+  int minimo = 1023;
+
+  while (true) {
+    //Compruebo si llega una q
+    if (Serial.available() > 0) {
+      char caracter_leido = Serial.read();
+      if (caracter_leido == 'q')
+        break;
+    }
+
+    int sensorValue = analogRead(PIN_LDR);
+    maximo = max(maximo, sensorValue);
+    minimo = max(minimo, sensorValue);
+    Serial.print(sensorValue);
+    Serial.print(",");
+    Serial.print(maximo);
+    Serial.print(",");
+    Serial.println(minimo);
+    delay(500);
+  }
 }
 
 void pruebaTemperatura() {
   Serial.println("Sonda temperatura");
+  Serial.println("Pulsar 'q' para salir.");
+
+  while (true) {
+    //Compruebo si llega una q
+    if (Serial.available() > 0) {
+      char caracter_leido = Serial.read();
+      if (caracter_leido == 'q')
+        break;
+    }
+
+    int sensorVal = analogRead(PIN_TMP36);
+    float voltage = (sensorVal / 1024.0) * 5.0;
+    float temperature = (voltage - 0.5) * 100;
+    Serial.println(temperature);
+  }
 }
 
 void pruebaServo() {
   Serial.println("Test Servo");
+  Serial.println("Pulsar 'q' para salir.");
+
+  while (true) {
+    //Compruebo si llega una q
+    if (Serial.available() > 0) {
+      char caracter_leido = Serial.read();
+      if (caracter_leido == 'q')
+        break;
+    }
+
+    for (int pos = 20; pos <= 160; pos += 5) {
+      // in steps of 1 degree
+      miservo.write(pos);
+      delay(30);
+    }
+
+    for (int pos = 160; pos >= 20; pos -= 5) {
+      miservo.write(pos);
+      delay(30);
+    }
+  }
 }
 
 void pruebaBuzzer() {
   Serial.println("Test Buzzer");
+  Serial.println("Pulsar 'q' para salir.");
+
+  while (true) {
+    //Compruebo si llega una q
+    if (Serial.available() > 0) {
+      char caracter_leido = Serial.read();
+      if (caracter_leido == 'q')
+        break;
+    }
+  }
 }
 
 void  pruebaClienteWeb() {
   Serial.println("Test Cliente Web");
+  Serial.println("Pulsar 'q' para salir.");
+
+  EthernetClient client;
+  char url_aprendiendoarduino[] = "www.aprendiendoarduino.com";
+
+  //Mando peticiñon web
+  if (client.connect(url_aprendiendoarduino, 80)) {
+    Serial.println("connected");
+    client.println("GET /servicios/aprendiendoarduino/ HTTP/1.1");
+    client.println("Host: www.aprendiendoarduino.com");
+    client.println("Connection: close");
+    client.println();
+  }
+  else {
+    Serial.println("connection failed");
+  }
+
+  //Espero respuesta del servidor
+  while (client.available() == 0) {
+    //nada
+  }
+
+  if (client.available()) {
+    Serial.println("Respuesta del Servidor---->");
+    while (client.available()) {
+      char c = client.read();
+      Serial.print(c);
+    }
+    client.stop();
+  }
 }
 
 void  pruebaServidorWeb() {
   Serial.println("Test Servidor Web");
+  Serial.println("Pulsar 'q' para salir.");
+
+  while (true) {
+    //Compruebo si llega una q
+    if (Serial.available() > 0) {
+      char caracter_leido = Serial.read();
+      if (caracter_leido == 'q')
+        break;
+    }
+  }
 }
