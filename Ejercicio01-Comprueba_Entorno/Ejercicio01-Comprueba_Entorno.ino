@@ -354,8 +354,10 @@ void pruebaBuzzer() {
     //Compruebo si llega una q
     if (Serial.available() > 0) {
       char caracter_leido = Serial.read();
-      if (caracter_leido == 'q')
+      if (caracter_leido == 'q') {
+        noTone(PIN_BUZZER);
         break;
+      }
     }
 
     output ? tone(PIN_BUZZER, NOTE_C5) : noTone(PIN_BUZZER);
