@@ -26,7 +26,7 @@
 
 #define NOTE_C5  523  //Frecuencia de sonido del buzzer
 
-byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xYY}; //Sustituir YY por el numero de KIT de Arduino
+byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xAA}; //Sustituir YY por el numero de KIT de Arduino
 EthernetServer server = EthernetServer(80);
 
 Servo miservo;
