@@ -19,16 +19,16 @@ void setup() {
   //Inicializar Ethernet
   Serial.println("inicializando red...");
 
-    if (Ethernet.begin(mac) == 0) {
+  if (Ethernet.begin(mac) == 0) {
     Serial.println("Failed to configure Ethernet using DHCP");
     for (;;)
       ;
-    }
-    else {
+  }
+  else {
     Serial.print("IP asignada por DHCP: ");
     Serial.println(Ethernet.localIP());
-    }
-    delay(500);
+  }
+  delay(500);
 
   Serial.println("Requesting Time...");
   unsigned long utc = ntp.readNTP();  //UTC time
@@ -36,7 +36,7 @@ void setup() {
   Serial.print("Hora recibida: ");
   Serial.println(utc);
   digitalClockDisplay();
-  
+
   utc = myTZ.toLocal(utc);
   setTime(utc);
   Serial.print("Hora corregida: ");
