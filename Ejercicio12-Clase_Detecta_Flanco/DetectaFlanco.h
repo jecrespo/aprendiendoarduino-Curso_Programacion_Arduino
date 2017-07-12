@@ -9,7 +9,7 @@ class DetectaFlanco {
       _pin = pin ;
     }
 
-    int inicio(int input) {  //solo admitre los parámetros INPUT e INPUT_PULLUP
+    void inicio(int input) {  //solo admitre los parámetros INPUT e INPUT_PULLUP
       pinMode(_pin, input);
       _anterior_estado = digitalRead(_pin);
     }
