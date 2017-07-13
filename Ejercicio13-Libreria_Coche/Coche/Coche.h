@@ -1,5 +1,5 @@
-#ifndef Coche_H
-#define Coche_H
+#ifndef Coche_h
+#define Coche_h
 
 #define LITROS_DEPOSITO 60 //litros
 #define NOTE_BUZZER  523
