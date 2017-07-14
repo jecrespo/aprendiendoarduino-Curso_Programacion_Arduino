@@ -13,6 +13,8 @@ Timezone myTZ(myDST, mySTD);
 
 byte mac[] = {0x90, 0xA2, 0xDA, 0x0F, 0x70, 0xYY};  //Sustituir YY por el numero de MAC correcto
 
+String dia_semana[] = {"","domingo", "lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"};
+
 void setup() {
   Serial.begin(9600);
 
@@ -63,6 +65,7 @@ void digitalClockDisplay() {
   Serial.print(" ");
   Serial.print(year());
   Serial.println();
+  Serial.println("Hoy es " + dia_semana[weekday()]);
 }
 
 void printDigits(int digits) {

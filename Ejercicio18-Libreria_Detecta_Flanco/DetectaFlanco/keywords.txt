@@ -1,0 +1,3 @@
+DetectaFlanco	KEYWORD1
+inicio	KEYWORD2
+comprueba	KEYWORD2
