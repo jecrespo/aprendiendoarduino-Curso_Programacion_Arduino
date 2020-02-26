@@ -10,7 +10,7 @@ void setup() {
 void loop() {
   int sensorValue = analogRead(PIN_LDR);
   maximo = max(maximo,sensorValue);
-  minimo = max(minimo,sensorValue);
+  minimo = min(minimo,sensorValue);
   Serial.print(sensorValue);
   Serial.print(",");
   Serial.print(maximo);
